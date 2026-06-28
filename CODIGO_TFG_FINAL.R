@@ -1,6 +1,6 @@
 ###############################################################
 # TRABAJO DE FIN DE GRADO
-# Relacion entre variables macroeconomicas espanolas (IPC y PIB)
+# Relacion entre variables macroeconomicas españolas (IPC y PIB)
 # y el comportamiento bursatil de BBVA y Banco Santander (2005-2025)
 #
 # El script hace, en este orden:
@@ -49,7 +49,7 @@ limpiar_fecha_ine <- function(x) {
 # 1) IPC (INE) - DATOS MENSUALES
 ##############################
 
-# La tabla 24077 del INE contiene el IPC general de Espana.
+# La tabla 24077 del INE contiene el IPC general de España.
 ipc_raw <- get_data_table(
   idTable   = 24077,
   dateStart = "2005/01/01",
@@ -62,7 +62,7 @@ ipc_raw <- get_data_table(
 if ("Nombre" %in% names(ipc_raw)) {
   ipc_raw$Nombre <- trimws(as.character(ipc_raw$Nombre))
   filtro_general <- grepl("general", ipc_raw$Nombre, ignore.case = TRUE) &
-    grepl("nacional|españa|espana", ipc_raw$Nombre, ignore.case = TRUE)
+    grepl("nacional|españa|españa", ipc_raw$Nombre, ignore.case = TRUE)
   if (sum(filtro_general, na.rm = TRUE) > 0) ipc_raw <- ipc_raw[filtro_general, ]
 }
 
@@ -74,10 +74,10 @@ ipc       <- ipc[order(ipc$Fecha), ]
 ipc       <- ipc[ipc$Fecha >= as.Date("2005-01-01") & ipc$Fecha <= as.Date("2025-12-31"), ]
 ipc       <- ipc[!duplicated(ipc$Fecha), ]   # por si quedara alguna fecha repetida
 
-# Inflacion mensual = diferencia del logaritmo del IPC (tasa de variacion mensual).
+# Inflación mensual = diferencia del logaritmo del IPC (tasa de variacion mensual).
 ipc$infl_m <- c(NA, diff(log(ipc$Valor)))
 
-# Inflacion interanual = IPC del mes respecto al mismo mes del ano anterior.
+# Inflación interanual = IPC del mes respecto al mismo mes del año anterior.
 ipc$infl_yoy <- c(rep(NA, 12),
                   ipc$Valor[13:nrow(ipc)] / ipc$Valor[1:(nrow(ipc) - 12)] - 1)
 
@@ -90,9 +90,9 @@ ipc_infl_m   <- ts(ipc$infl_m,   start = c(2005, 1), frequency = 12)
 ipc_infl_yoy <- ts(ipc$infl_yoy, start = c(2005, 1), frequency = 12)
 
 par(mfrow = c(3, 1), mar = c(4, 4, 3, 1))
-plot(ipc_ts,       main = "IPC Espana (indice) 2005-2025",    ylab = "Indice",   xlab = "Ano")
-plot(ipc_infl_m,   main = "Inflacion mensual (log-diff IPC)", ylab = "infl_m",   xlab = "Ano"); abline(h = 0)
-plot(ipc_infl_yoy, main = "Inflacion interanual (YoY)",       ylab = "infl_yoy", xlab = "Ano"); abline(h = 0)
+plot(ipc_ts,       main = "IPC España (índice) 2005-2025",    ylab = "Índice",   xlab = "Año")
+plot(ipc_infl_m,   main = "Inflación mensual (log-diff IPC)", ylab = "infl_m",   xlab = "Año"); abline(h = 0)
+plot(ipc_infl_yoy, main = "Inflación interanual (YoY)",       ylab = "infl_yoy", xlab = "Año"); abline(h = 0)
 par(mfrow = c(1, 1))
 
 # Base limpia del IPC que usaremos despues.
@@ -113,13 +113,13 @@ pib_raw <- get_data_table(
 )
 pib_raw$Nombre <- trimws(as.character(pib_raw$Nombre))
 
-# Elegimos el PIB a precios de mercado, en indices de volumen encadenados,
+# Elegimos el PIB a precios de mercado, en índices de volumen encadenados,
 # dato base y ajustado de estacionalidad y calendario (asi medimos la economia real).
 pib <- pib_raw[
   grepl("Datos ajustados de estacionalidad y calendario", pib_raw$Nombre, ignore.case = TRUE) &
-  grepl("Producto interior bruto a precios de mercado",    pib_raw$Nombre, ignore.case = TRUE) &
-  grepl("Dato base",                                       pib_raw$Nombre, ignore.case = TRUE) &
-  grepl("Índices de volumen encadenados",                  pib_raw$Nombre, ignore.case = TRUE),
+    grepl("Producto interior bruto a precios de mercado",    pib_raw$Nombre, ignore.case = TRUE) &
+    grepl("Dato base",                                       pib_raw$Nombre, ignore.case = TRUE) &
+    grepl("Índices de volumen encadenados",                  pib_raw$Nombre, ignore.case = TRUE),
   c("Fecha", "Valor")
 ]
 
@@ -132,7 +132,7 @@ pib       <- pib[!duplicated(pib$Fecha), ]
 # Crecimiento trimestral del PIB = diferencia del logaritmo (tasa de crecimiento).
 pib$gdp_g_q <- c(NA, diff(log(pib$Valor)))
 
-# Ano y trimestre de inicio para construir la serie ts trimestral.
+# Año y trimestre de inicio para construir la serie ts trimestral.
 start_year <- as.integer(format(min(pib$Fecha), "%Y"))
 start_q    <- ((as.integer(format(min(pib$Fecha), "%m")) - 1) %/% 3) + 1
 
@@ -140,8 +140,8 @@ pib_ts   <- ts(pib$Valor,    start = c(start_year, start_q), frequency = 4)
 pib_g_ts <- ts(pib$gdp_g_q,  start = c(start_year, start_q), frequency = 4)
 
 par(mfrow = c(2, 1), mar = c(4, 4, 3, 1))
-plot(pib_ts,   main = "PIB Espana (trimestral) 2005-2025",         ylab = "Indice", xlab = "Ano")
-plot(pib_g_ts, main = "Crecimiento trimestral del PIB (log-diff)", ylab = "crec_q", xlab = "Ano"); abline(h = 0)
+plot(pib_ts,   main = "PIB España (trimestral) 2005-2025",         ylab = "Índice", xlab = "Año")
+plot(pib_g_ts, main = "Crecimiento trimestral del PIB (log-diff)", ylab = "crec_q", xlab = "Año"); abline(h = 0)
 par(mfrow = c(1, 1))
 
 
@@ -152,21 +152,21 @@ par(mfrow = c(1, 1))
 # Esta funcion descarga un banco de Yahoo Finance y calcula precios,
 # rendimientos y volatilidad. Se usa igual para BBVA y para Santander.
 prep_bank <- function(ticker, nombre_banco) {
-
+  
   # Descargamos los precios diarios. auto.assign = FALSE para que devuelva el objeto.
   x <- getSymbols(ticker, src = "yahoo",
                   from = "2005-01-01", to = "2026-01-01", auto.assign = FALSE)
   x <- na.omit(x)
-
+  
   px_d     <- Ad(x)            # precio ajustado diario (incluye dividendos y splits)
   log_px_d <- log(px_d)        # log-precio diario
   px_m     <- to.monthly(px_d, indexAt = "lastof", OHLC = FALSE)  # precio mensual (ultimo del mes)
   log_px_m <- log(px_m)
-
+  
   # Rendimientos logaritmicos: r_t = log(P_t) - log(P_{t-1}).
   r_d <- na.omit(dailyReturn(px_d, type = "log"))    # diarios
   r_m <- na.omit(monthlyReturn(px_m, type = "log"))  # mensuales
-
+  
   # --- Graficos de niveles ---
   par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
   plot(index(px_d),     as.numeric(px_d),     type = "l", main = paste(nombre_banco, "- Precio diario"),     xlab = "Fecha", ylab = "Precio")
@@ -174,7 +174,7 @@ prep_bank <- function(ticker, nombre_banco) {
   plot(index(px_m),     as.numeric(px_m),     type = "l", main = paste(nombre_banco, "- Precio mensual"),    xlab = "Fecha", ylab = "Precio")
   plot(index(log_px_m), as.numeric(log_px_m), type = "l", main = paste(nombre_banco, "- Log(precio) mensual"), xlab = "Fecha", ylab = "log(precio)")
   par(mfrow = c(1, 1))
-
+  
   # --- Graficos de rendimientos ---
   par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
   plot(index(r_d), as.numeric(r_d), type = "l", main = paste(nombre_banco, "- Rendimiento diario"),  xlab = "Fecha", ylab = "r_d"); abline(h = 0)
@@ -182,7 +182,7 @@ prep_bank <- function(ticker, nombre_banco) {
   hist(as.numeric(r_d), breaks = 60, main = paste(nombre_banco, "- Histograma rend. diarios"), xlab = "r_d")
   acf(as.numeric(r_d), main = paste(nombre_banco, "- ACF rendimientos diarios"))
   par(mfrow = c(1, 1))
-
+  
   # --- Diagnostico de heterocedasticidad ---
   # Si la ACF de los rendimientos al cuadrado muestra autocorrelaciones, hay
   # efectos ARCH: la varianza no es constante. Eso justifica usar GARCH despues.
@@ -190,29 +190,29 @@ prep_bank <- function(ticker, nombre_banco) {
   acf(as.numeric(r_d)^2, main = paste(nombre_banco, "- ACF de r_d^2"))
   plot(index(r_d), as.numeric(r_d), type = "l", main = paste(nombre_banco, "- Rendimientos diarios"), xlab = "Fecha", ylab = "r_d"); abline(h = 0)
   par(mfrow = c(1, 1))
-
+  
   # Test ARCH-LM de Engle (1982). H0: no hay efectos ARCH.
   arch12 <- FinTS::ArchTest(as.numeric(r_d), lags = 12)
   arch24 <- FinTS::ArchTest(as.numeric(r_d), lags = 24)
   cat("\n[", nombre_banco, "] Test ARCH-LM (12 retardos):\n"); print(arch12)
   cat("\n[", nombre_banco, "] Test ARCH-LM (24 retardos):\n"); print(arch24)
-
+  
   # --- Volatilidad realizada mensual ---
   # Desviacion tipica de los rendimientos diarios del mes, escalada por la raiz
   # del numero de sesiones del mes (asi pasa a volatilidad del periodo mensual).
   vol_m <- apply.monthly(r_d, function(z) sd(z, na.rm = TRUE) * sqrt(length(na.omit(z))))
   plot(index(vol_m), as.numeric(vol_m), type = "l",
        main = paste(nombre_banco, "- Volatilidad realizada mensual"), xlab = "Fecha", ylab = "vol_m")
-
+  
   # Base mensual final del banco: rendimiento y volatilidad por mes.
-  # Se unen por clave ano-mes porque el rendimiento se indexa al ultimo dia natural
+  # Se unen por clave año-mes porque el rendimiento se indexa al ultimo dia natural
   # y la volatilidad al ultimo dia con cotizacion.
   ret_m_df   <- data.frame(ym = format(as.Date(index(r_m)),   "%Y-%m"), ret_m = as.numeric(r_m))
   vol_m_df   <- data.frame(ym = format(as.Date(index(vol_m)), "%Y-%m"), vol_m = as.numeric(vol_m))
   monthly_df <- merge(ret_m_df, vol_m_df, by = "ym", all = FALSE)
   monthly_df$date <- as.Date(paste0(monthly_df$ym, "-01"))
   monthly_df <- monthly_df[order(monthly_df$date), c("date", "ret_m", "vol_m")]
-
+  
   # Devolvemos los objetos para reutilizarlos en el resto del script.
   list(px_d = px_d, r_d = r_d, r_m = r_m, vol_m = vol_m, monthly_df = monthly_df)
 }
@@ -227,7 +227,7 @@ san  <- prep_bank("SAN.MC",  "SAN")
 ##############################
 
 # Funciones auxiliares para crear claves de union temporal.
-ym_from_date   <- function(d) format(as.Date(d), "%Y-%m")          # clave ano-mes "2020-03"
+ym_from_date   <- function(d) format(as.Date(d), "%Y-%m")          # clave año-mes "2020-03"
 qkey_from_date <- function(d) {                                     # clave trimestre "2020Q1"
   y <- format(as.Date(d), "%Y")
   q <- ((as.integer(format(as.Date(d), "%m")) - 1) %/% 3) + 1
@@ -341,16 +341,16 @@ resumen_base(data_mix_san_pib,  "MIXTO_SAN_PIB",        "date")
 par(mfrow = c(4, 1), mar = c(4, 4, 3, 1))
 plot(data_m_bbva_ipc$date, data_m_bbva_ipc$ret_m,    type = "l", main = "BBVA - Rentabilidad mensual", xlab = "Fecha", ylab = "ret_m"); abline(h = 0)
 plot(data_m_bbva_ipc$date, data_m_bbva_ipc$vol_m,    type = "l", main = "BBVA - Volatilidad mensual",  xlab = "Fecha", ylab = "vol_m")
-plot(data_m_bbva_ipc$date, data_m_bbva_ipc$infl_m,   type = "l", main = "Inflacion mensual",           xlab = "Fecha", ylab = "infl_m"); abline(h = 0)
-plot(data_m_bbva_ipc$date, data_m_bbva_ipc$infl_yoy, type = "l", main = "Inflacion interanual",        xlab = "Fecha", ylab = "infl_yoy"); abline(h = 0)
+plot(data_m_bbva_ipc$date, data_m_bbva_ipc$infl_m,   type = "l", main = "Inflación mensual",           xlab = "Fecha", ylab = "infl_m"); abline(h = 0)
+plot(data_m_bbva_ipc$date, data_m_bbva_ipc$infl_yoy, type = "l", main = "Inflación interanual",        xlab = "Fecha", ylab = "infl_yoy"); abline(h = 0)
 par(mfrow = c(1, 1))
 
 # SAN + IPC
 par(mfrow = c(4, 1), mar = c(4, 4, 3, 1))
 plot(data_m_san_ipc$date, data_m_san_ipc$ret_m,    type = "l", main = "SAN - Rentabilidad mensual", xlab = "Fecha", ylab = "ret_m"); abline(h = 0)
 plot(data_m_san_ipc$date, data_m_san_ipc$vol_m,    type = "l", main = "SAN - Volatilidad mensual",  xlab = "Fecha", ylab = "vol_m")
-plot(data_m_san_ipc$date, data_m_san_ipc$infl_m,   type = "l", main = "Inflacion mensual",          xlab = "Fecha", ylab = "infl_m"); abline(h = 0)
-plot(data_m_san_ipc$date, data_m_san_ipc$infl_yoy, type = "l", main = "Inflacion interanual",       xlab = "Fecha", ylab = "infl_yoy"); abline(h = 0)
+plot(data_m_san_ipc$date, data_m_san_ipc$infl_m,   type = "l", main = "Inflación mensual",          xlab = "Fecha", ylab = "infl_m"); abline(h = 0)
+plot(data_m_san_ipc$date, data_m_san_ipc$infl_yoy, type = "l", main = "Inflación interanual",       xlab = "Fecha", ylab = "infl_yoy"); abline(h = 0)
 par(mfrow = c(1, 1))
 
 # BBVA + PIB
@@ -512,7 +512,7 @@ granger_sensibilidad <- function(df, y_var, x_var, nombre, lags = 1:4) {
   do.call(rbind, lapply(lags, function(lag) test_granger_lag_fijo(df, y_var, x_var, nombre, lag)))
 }
 
-# Submuestra continua hasta un ano (para comprobar si el resultado depende del COVID).
+# Submuestra continua hasta un año (para comprobar si el resultado depende del COVID).
 submuestra_hasta_anio <- function(df, fecha_col, anio_final) {
   f <- as.Date(df[[fecha_col]])
   df[as.integer(format(f, "%Y")) <= anio_final, ]
@@ -645,7 +645,7 @@ crear_ts <- function(df, fecha_col, var_col, frecuencia) {
   aux <- aux[order(aux$fecha), ]; aux <- aux[!is.na(aux$valor), ]
   start_year <- as.integer(format(min(aux$fecha), "%Y"))
   start_per  <- if (frecuencia == 12) as.integer(format(min(aux$fecha), "%m"))
-                else ((as.integer(format(min(aux$fecha), "%m")) - 1) %/% 3) + 1
+  else ((as.integer(format(min(aux$fecha), "%m")) - 1) %/% 3) + 1
   ts(aux$valor, start = c(start_year, start_per), frequency = frecuencia)
 }
 
@@ -654,7 +654,7 @@ crear_ts <- function(df, fecha_col, var_col, frecuencia) {
 # 10) MODELOS ARIMA / SARIMA
 ###############################################################
 # Modelizamos la dinamica EN MEDIA de las series ya transformadas
-# (rendimientos, volatilidades, inflacion, crecimiento del PIB).
+# (rendimientos, volatilidades, inflación, crecimiento del PIB).
 # A los precios en nivel NO se les aplica ARIMA: eso se deja para cointegracion.
 
 # --- 10.1 Tests de raiz unitaria previos (ADF, PP y KPSS) ---
@@ -701,7 +701,7 @@ ajustar_arima <- function(x_ts, nombre, h) {
   cat("Ljung-Box lag 24 p-value:", round(lb24_p, 4), "\n")
   cat("Jarque-Bera   p-value   :", round(jb_p,   4), " (H0: normalidad)\n")
   cat("AIC:", round(AIC(modelo), 4), " | BIC:", round(BIC(modelo), 4), "\n")
-
+  
   # Graficos de diagnostico de los residuos.
   par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
   plot(res, type = "l", main = paste("Residuos ARIMA -", nombre), xlab = "Observacion", ylab = "residuo"); abline(h = 0)
@@ -710,14 +710,14 @@ ajustar_arima <- function(x_ts, nombre, h) {
   curve(dnorm(x, mean = mean(res), sd = sd(res)), add = TRUE, lwd = 2)
   qqnorm(res, main = paste("QQ-plot residuos -", nombre)); qqline(res, lwd = 2)
   par(mfrow = c(1, 1))
-
+  
   # Prevision ilustrativa (no es validacion fuera de muestra).
   prev <- forecast::forecast(modelo, h = h)
   plot(prev, main = paste("Prevision ARIMA -", nombre), xlab = "Periodo", ylab = "valor")
-
+  
   if ((!is.na(lb12_p) && lb12_p < 0.05) || (!is.na(lb24_p) && lb24_p < 0.05))
     cat("AVISO: el ARIMA deja autocorrelacion residual significativa.\n")
-
+  
   resumen <- data.frame(
     serie = nombre, modelo = paste0("ARIMA(", orden[1], ",", orden[2], ",", orden[3], ")"),
     AIC = round(AIC(modelo), 4), BIC = round(BIC(modelo), 4),
@@ -739,7 +739,7 @@ series_tests_raiz <- list(
   list(nombre = "PIB_gdp_g_q",  x = crear_ts(data_q_bbva_pib, "date_q", "gdp_g_q",   4), h =  4)
 )
 
-# Para la inflacion NO ponemos ARIMA no estacional en la tabla final: como el IPC
+# Para la inflación NO ponemos ARIMA no estacional en la tabla final: como el IPC
 # mensual puede tener estacionalidad, ahi usamos SARIMA (mas abajo).
 series_arima <- list(
   list(nombre = "BBVA_ret_m",  x = crear_ts(data_m_bbva_ipc, "date",   "ret_m",  12), h = 12),
@@ -762,15 +762,15 @@ tabla_raiz_unitaria <- do.call(rbind, lapply(series_tests_raiz, function(s) test
 cat("\n=== MODELOS ARIMA ===\n")
 resultados_arima <- lapply(series_arima, function(s) ajustar_arima(s$x, s$nombre, s$h))
 tabla_arima_no_inflacion <- do.call(rbind, lapply(resultados_arima, function(r) r$resumen))
-cat("\nTABLA ARIMA NO ESTACIONAL (sin inflacion):\n"); print(tabla_arima_no_inflacion)
+cat("\nTABLA ARIMA NO ESTACIONAL (sin inflación):\n"); print(tabla_arima_no_inflacion)
 
-# --- 10.5 SARIMA para la inflacion ---
-# auto.arima con seasonal = TRUE permite parte estacional. La inflacion mensual e
+# --- 10.5 SARIMA para la inflación ---
+# auto.arima con seasonal = TRUE permite parte estacional. La inflación mensual e
 # interanual encajan mejor aqui: bajan el AIC y dejan residuos sin autocorrelacion.
 ajustar_sarima_inflacion <- function(x_ts, nombre, h = 12) {
   x_ts <- na.omit(x_ts)
   cat("\n==================================================\n")
-  cat("SARIMA para inflacion:", nombre, "\n")
+  cat("SARIMA para inflación:", nombre, "\n")
   modelo <- forecast::auto.arima(x_ts, seasonal = TRUE, stepwise = FALSE,
                                  approximation = FALSE, ic = "aic", trace = FALSE)
   print(summary(modelo))
@@ -784,6 +784,10 @@ ajustar_sarima_inflacion <- function(x_ts, nombre, h = 12) {
   cat("Ljung-Box lag 24 p-value:", round(lb24_p, 4), "\n")
   cat("Jarque-Bera   p-value   :", round(jb_p,   4), "\n")
   frec <- if ("Frequency" %in% names(orden)) orden["Frequency"] else frequency(x_ts)
+  # Prevision ilustrativa de la inflación (SARIMA).
+  prev <- forecast::forecast(modelo, h = h)
+  plot(prev, main = paste("Prevision SARIMA -", sub("_SARIMA$", "", nombre)),
+       xlab = "Periodo", ylab = "valor")
   data.frame(
     serie = sub("_SARIMA$", "", nombre),
     modelo = paste0("SARIMA ARIMA(", orden["p"], ",", orden["d"], ",", orden["q"], ")(",
@@ -793,14 +797,14 @@ ajustar_sarima_inflacion <- function(x_ts, nombre, h = 12) {
     JarqueBera_p = round(jb_p, 5), horizonte_prevision = h, stringsAsFactors = FALSE)
 }
 
-cat("\n=== SARIMA PARA INFLACION ===\n")
+cat("\n=== SARIMA PARA INFLACIÓN ===\n")
 tabla_sarima_inflacion <- rbind(
   ajustar_sarima_inflacion(crear_ts(data_m_bbva_ipc, "date", "infl_m",   12), "IPC_infl_m_SARIMA",   12),
   ajustar_sarima_inflacion(crear_ts(data_m_bbva_ipc, "date", "infl_yoy", 12), "IPC_infl_yoy_SARIMA", 12)
 )
 print(tabla_sarima_inflacion)
 
-# Tabla ARIMA/SARIMA final: ARIMA no estacional para todo menos inflacion, y SARIMA para inflacion.
+# Tabla ARIMA/SARIMA final: ARIMA no estacional para todo menos inflación, y SARIMA para inflación.
 tabla_arima <- rbind(tabla_arima_no_inflacion, tabla_sarima_inflacion)
 rownames(tabla_arima) <- NULL
 cat("\nTABLA PRINCIPAL ARIMA/SARIMA:\n"); print(tabla_arima)
@@ -833,7 +837,7 @@ ajustar_garch <- function(diario, nombre_banco) {
   rd <- as.numeric(diario$rd_xts); fechas <- diario$fechas
   cat("\n==================================================\n")
   cat("GARCH para:", nombre_banco, "| Observaciones:", length(rd), "\n")
-
+  
   # Definimos las cuatro especificaciones (media constante en todas).
   specs <- list(
     sGARCH_norm = ugarchspec(variance.model = list(model = "sGARCH",   garchOrder = c(1, 1)),
@@ -845,7 +849,7 @@ ajustar_garch <- function(diario, nombre_banco) {
     EGARCH_t    = ugarchspec(variance.model = list(model = "eGARCH",   garchOrder = c(1, 1)),
                              mean.model = list(armaOrder = c(0, 0), include.mean = TRUE), distribution.model = "std")
   )
-
+  
   # Ajustamos cada modelo; si alguno falla, devolvemos NULL en su lugar.
   ajustar_uno <- function(spec_obj) {
     tryCatch(ugarchfit(spec = spec_obj, data = rd, solver = "hybrid", solver.control = list(trace = 0)),
@@ -853,7 +857,7 @@ ajustar_garch <- function(diario, nombre_banco) {
   }
   fits <- lapply(specs, ajustar_uno)
   if (all(sapply(fits, is.null))) stop("Ningun GARCH pudo estimarse para ", nombre_banco)
-
+  
   # Tabla con AIC, BIC y convergencia de cada modelo.
   ic_tabla <- data.frame(Modelo = names(fits), AIC = NA_real_, BIC = NA_real_,
                          convergencia = NA_integer_, stringsAsFactors = FALSE)
@@ -863,7 +867,7 @@ ajustar_garch <- function(diario, nombre_banco) {
     ic_tabla$convergencia[i] <- fits[[i]]@fit$convergence
   }
   cat("\n--- Comparacion de modelos GARCH ---\n"); print(ic_tabla)
-
+  
   # Elegimos el mejor por BIC entre los que han convergido (convergencia == 0).
   idx_validos <- which(!is.na(ic_tabla$BIC) & ic_tabla$convergencia == 0)
   if (length(idx_validos) == 0) stop("Ningun GARCH convergio para ", nombre_banco)
@@ -871,11 +875,11 @@ ajustar_garch <- function(diario, nombre_banco) {
   mejor_fit <- fits[[mejor_idx]]; mejor_mod <- ic_tabla$Modelo[mejor_idx]
   cat("\nMejor modelo segun BIC:", mejor_mod, "\n")
   print(mejor_fit)
-
+  
   # Volatilidad condicional estimada y residuos estandarizados z_t.
   vol_cond <- as.numeric(sigma(mejor_fit))
   res_std  <- as.numeric(residuals(mejor_fit, standardize = TRUE))
-
+  
   # Diagnostico: si el modelo es bueno, z_t y z_t^2 no deben tener autocorrelacion
   # ni efectos ARCH. Como la distribucion es t, no usamos normalidad como criterio;
   # en su lugar comprobamos el ajuste con la transformacion PIT y un test KS.
@@ -883,7 +887,7 @@ ajustar_garch <- function(diario, nombre_banco) {
   lb_res2 <- box_ljung_seguro(res_std^2, 12, 0)
   arch_lm <- safe_test(FinTS::ArchTest(res_std, lags = 12))
   lb_res_p <- extraer_p(lb_res); lb_res2_p <- extraer_p(lb_res2); arch_p <- extraer_p(arch_lm)
-
+  
   shape <- tryCatch(as.numeric(coef(mejor_fit)["shape"]), error = function(e) NA_real_)
   if (grepl("_t$", mejor_mod) && !is.na(shape)) {
     pit <- rugarch::pdist("std", q = res_std, mu = 0, sigma = 1, shape = shape)
@@ -893,19 +897,19 @@ ajustar_garch <- function(diario, nombre_banco) {
   }
   pit <- pmin(pmax(pit, 1e-8), 1 - 1e-8)
   ks_pit_p <- extraer_p(safe_test(stats::ks.test(pit, "punif")))
-
+  
   cat("\n--- Diagnostico del mejor GARCH ---\n")
   cat("Ljung-Box z_t   lag 12 p-value:", round(lb_res_p,  4), "\n")
   cat("Ljung-Box z_t^2 lag 12 p-value:", round(lb_res2_p, 4), "\n")
   cat("ARCH-LM         lag 12 p-value:", round(arch_p,    4), "\n")
   cat("PIT-KS frente a la distribucion estimada p-value:", round(ks_pit_p, 4), "\n")
-
+  
   # Grafico: rendimientos y volatilidad condicional estimada.
   par(mfrow = c(2, 1), mar = c(4, 4, 3, 1))
   plot(fechas, rd, type = "l", main = paste(nombre_banco, "- Rendimientos diarios"), xlab = "Fecha", ylab = "r_d (%)"); abline(h = 0)
   plot(fechas, vol_cond, type = "l", main = paste(nombre_banco, "- Volatilidad condicional:", mejor_mod), xlab = "Fecha", ylab = "sigma_t (%)")
   par(mfrow = c(1, 1))
-
+  
   # Grafico de diagnostico de los residuos estandarizados.
   par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
   plot(res_std, type = "l", main = paste(nombre_banco, "- Residuos estandarizados"), xlab = "Observacion", ylab = "z_t"); abline(h = 0); abline(h = c(-3, 3), lty = 2)
@@ -916,18 +920,18 @@ ajustar_garch <- function(diario, nombre_banco) {
   qqplot(q_teoricos, sort(res_std), main = paste(nombre_banco, "- QQ-plot vs distribucion estimada"),
          xlab = "Cuantiles teoricos", ylab = "Cuantiles muestrales"); abline(0, 1, lwd = 2)
   par(mfrow = c(1, 1))
-
+  
   # Prevision de la volatilidad a 20 sesiones.
   prev_garch <- ugarchforecast(mejor_fit, n.ahead = 20)
   plot(1:20, as.numeric(sigma(prev_garch)), type = "l",
        main = paste(nombre_banco, "- Prevision de volatilidad GARCH"), xlab = "Horizonte diario", ylab = "sigma prevista (%)")
-
+  
   resumen <- data.frame(
     banco = nombre_banco, mejor_modelo_BIC = mejor_mod,
     AIC = round(ic_tabla$AIC[mejor_idx], 5), BIC = round(ic_tabla$BIC[mejor_idx], 5),
     LB_z_p12 = round(lb_res_p, 5), LB_z2_p12 = round(lb_res2_p, 5),
     ARCH_LM_p12 = round(arch_p, 5), PIT_KS_p = round(ks_pit_p, 5), stringsAsFactors = FALSE)
-
+  
   list(mejor_fit = mejor_fit, mejor_mod = mejor_mod, ic_tabla = ic_tabla,
        vol_cond = vol_cond, res_std = res_std, resumen = resumen,
        vol_df = data.frame(date = fechas, sigma_t = vol_cond))
@@ -987,17 +991,17 @@ spec_egarch_t_oos <- ugarchspec(
 # Funcion que evalua un banco. Devuelve una fila por modelo (EGARCH-t y 2 benchmarks).
 evaluar_oos_volatilidad <- function(r_d_xts, nombre_banco,
                                     n_oos = 500, refit = 20) {
-
+  
   rd <- as.numeric(na.omit(r_d_xts)) * 100   # a %, igual que en el bloque 11
   N  <- length(rd)
   if (N <= n_oos + 300) {
     cat("[", nombre_banco, "] Serie demasiado corta para n_oos =", n_oos, "\n")
     return(NULL)
   }
-
+  
   cat("\n[", nombre_banco, "] Rolling con ugarchroll:",
       n_oos, "dias de test, refit cada", refit, "(ventana recursiva)...\n")
-
+  
   # Rolling 1-dia-ahead con reestimacion periodica y filtrado entre reestimaciones.
   # refit.window = "recursive": ventana expansiva (usa todos los datos desde el
   # inicio hasta el punto de reestimacion), coherente con el enfoque del bloque 11.
@@ -1007,42 +1011,42 @@ evaluar_oos_volatilidad <- function(r_d_xts, nombre_banco,
                refit.window = "recursive", solver = "hybrid",
                calculate.VaR = FALSE, keep.coef = FALSE),
     error = function(e) NULL)
-
+  
   if (is.null(roll)) {
     cat("[", nombre_banco, "] ugarchroll fallo; revisar solver o reducir n_oos.\n")
     return(NULL)
   }
-
+  
   # Si alguna ventana no convergio, reintentar SOLO esas con otro solver.
   if (!is.null(roll@model$noncidx) && length(roll@model$noncidx) > 0) {
     cat("[", nombre_banco, "] Ventanas sin convergencia:",
         length(roll@model$noncidx), "- reintentando con gosolnp...\n")
     roll <- tryCatch(resume(roll, solver = "gosolnp"), error = function(e) roll)
   }
-
+  
   # Extraemos las previsiones 1-dia (Sigma) del objeto roll.
   df <- as.data.frame(roll, which = "density")   # columnas: Mu, Sigma, ..., Realized
   sigma_egarch <- as.numeric(df$Sigma)           # prevision 1-dia EGARCH-t (en %)
-
-  # Indices globales del tramo de test (los ultimos n_oos dias) y benchmarks.
+  
+  # Índices globales del tramo de test (los ultimos n_oos dias) y benchmarks.
   test_idx     <- (N - n_oos + 1):N
   realizado    <- rd[test_idx]                   # rendimiento realizado (en %)
   sigma_rw     <- abs(rd[test_idx - 1])          # benchmark: |r de ayer|
   sigma_uncond <- rep(sd(rd[1:(N - n_oos)]), n_oos)  # benchmark: sd entrenamiento
-
+  
   # Alineacion robusta por si ugarchroll devolviera menos filas que n_oos.
   m <- min(length(sigma_egarch), n_oos)
   sigma_egarch <- tail(sigma_egarch, m)
   realizado    <- tail(realizado,    m)
   sigma_rw     <- tail(sigma_rw,     m)
   sigma_uncond <- tail(sigma_uncond, m)
-
+  
   # Proxy de volatilidad realizada: |r| (mismo objetivo para los tres modelos).
   proxy_abs <- abs(realizado)
-
+  
   mae  <- function(pred, obs) mean(abs(pred - obs), na.rm = TRUE)
   rmse <- function(pred, obs) sqrt(mean((pred - obs)^2, na.rm = TRUE))
-
+  
   out <- data.frame(
     Banco  = nombre_banco,
     Modelo = c("EGARCH-t (rolling)",
@@ -1132,7 +1136,7 @@ cat("[Cointegracion] Bases de log-niveles construidas.\n")
 # IMPORTANTE: para decidir NO usamos una regla que deje a KPSS vetar el resultado.
 # Motivo: el p-valor de kpss.test esta truncado en [0.01, 0.1] y pierde potencia
 # frente a raices unitarias con deriva, mientras que ADF y PP coinciden con la
-# teoria (un log-precio bursatil o un log-indice macro son I(1) de manual). Por eso
+# teoria (un log-precio bursatil o un log-Índice macro son I(1) de manual). Por eso
 # clasificamos por MAYORIA: la serie es I(1) si al menos 2 de los 3 contrastes lo apoyan.
 test_integracion <- function(x, nombre) {
   x <- na.omit(as.numeric(x))
@@ -1142,23 +1146,23 @@ test_integracion <- function(x, nombre) {
   adf_nivel_p  <- extraer_p(adf_nivel);  adf_diff_p  <- extraer_p(adf_diff)
   pp_nivel_p   <- extraer_p(pp_nivel);   pp_diff_p   <- extraer_p(pp_diff)
   kpss_nivel_p <- extraer_p(kpss_nivel); kpss_diff_p <- extraer_p(kpss_diff)
-
+  
   # Cada contraste "vota" I(1) si en nivel apunta a raiz unitaria y en diferencia a estacionariedad.
   voto_adf  <- !is.na(adf_nivel_p)  && !is.na(adf_diff_p)  && adf_nivel_p  > 0.05 && adf_diff_p  < 0.05
   voto_pp   <- !is.na(pp_nivel_p)   && !is.na(pp_diff_p)   && pp_nivel_p   > 0.05 && pp_diff_p   < 0.05
   voto_kpss <- !is.na(kpss_nivel_p) && !is.na(kpss_diff_p) && kpss_nivel_p < 0.05 && kpss_diff_p > 0.05
-
+  
   # Clasificacion por mayoria (>= 2 de 3). KPSS cuenta como un voto, no como un veto.
   votos_i1 <- sum(voto_adf, voto_pp, voto_kpss, na.rm = TRUE)
   es_i1    <- votos_i1 >= 2
-
+  
   cat("\n--------------------------------------------------\n")
   cat("Integracion:", nombre, "\n")
   cat("ADF  nivel p:", round(adf_nivel_p,  4), " | ADF  diff p:", round(adf_diff_p,  4), "\n")
   cat("PP   nivel p:", round(pp_nivel_p,   4), " | PP   diff p:", round(pp_diff_p,   4), "\n")
   cat("KPSS nivel p:", round(kpss_nivel_p, 4), " | KPSS diff p:", round(kpss_diff_p, 4), "\n")
   cat("Votos a favor de I(1):", votos_i1, "de 3  ->  Clasificacion:", ifelse(es_i1, "I(1)", "No I(1)"), "\n")
-
+  
   data.frame(serie = nombre,
              ADF_nivel_p = round(adf_nivel_p, 5), ADF_diff_p = round(adf_diff_p, 5),
              PP_nivel_p  = round(pp_nivel_p,  5), PP_diff_p  = round(pp_diff_p,  5),
@@ -1254,12 +1258,12 @@ analizar_cointegracion_par <- function(df, y_col, x_col, fecha_col,
   y <- df[[y_col]]; x <- df[[x_col]]; fecha_vec <- df[[fecha_col]]
   cat("\n==================================================\n")
   cat("ANALISIS DE COINTEGRACION:", nombre_par, "\n")
-
+  
   # Paso 1: comprobar que ambas series son I(1).
   int_y <- test_integracion(y, nombre_y)
   int_x <- test_integracion(x, nombre_x)
   ambas_i1 <- isTRUE(int_y$es_I1[1]) && isTRUE(int_x$es_I1[1])
-
+  
   eg <- NULL; po <- NULL; jo <- NULL
   if (ambas_i1) {
     # Paso 2 y 3: contrastes de cointegracion.
@@ -1270,19 +1274,19 @@ analizar_cointegracion_par <- function(df, y_col, x_col, fecha_col,
   } else {
     cat("\nNo se aplica cointegracion: al menos una serie no es I(1).\n")
   }
-
+  
   # Decision de Phillips-Ouliaris.
   po_stat <- if (!is.null(po)) as.numeric(po@teststat) else NA_real_
   po_crit <- if (!is.null(po)) as.numeric(po@cval[1, "5pct"]) else NA_real_
   po_coint <- if (!is.null(po)) po_stat > po_crit else NA
   jo_dec <- extraer_decision_johansen(jo)
-
+  
   # Contamos en cuantos contrastes hay cointegracion (PO, Johansen traza, Johansen valor propio).
   evidencias <- c(isTRUE(po_coint), isTRUE(jo_dec$Johansen_trace_coint[1]), isTRUE(jo_dec$Johansen_eigen_coint[1]))
   num_positivos  <- if (ambas_i1) sum(evidencias, na.rm = TRUE) else NA_integer_
   coint_algun    <- if (ambas_i1) num_positivos >= 1 else NA   # evidencia en al menos un contraste
   coint_coherente<- if (ambas_i1) num_positivos >= 2 else NA   # evidencia coherente (>= 2 contrastes)
-
+  
   resumen <- data.frame(
     par = nombre_par, frecuencia = frecuencia, y = nombre_y, x = nombre_x,
     y_I1 = int_y$es_I1[1], x_I1 = int_x$es_I1[1], ambas_I1 = ambas_i1,
@@ -1295,7 +1299,7 @@ analizar_cointegracion_par <- function(df, y_col, x_col, fecha_col,
     Cointegracion_algun_contraste = coint_algun,
     Cointegracion_coherente = coint_coherente,
     stringsAsFactors = FALSE)
-
+  
   list(integracion_y = int_y, integracion_x = int_x, resumen = resumen)
 }
 
@@ -1305,13 +1309,13 @@ cat("RESULTADOS COINTEGRACION\n")
 cat("============================================================\n")
 
 coint_bbva_ipc <- analizar_cointegracion_par(coint_m_bbva, "log_px_bbva", "log_ipc", "ym",
-  "log(BBVA)", "log(IPC)", "BBVA + IPC", "mensual", 12)
+                                             "log(BBVA)", "log(IPC)", "BBVA + IPC", "mensual", 12)
 coint_san_ipc  <- analizar_cointegracion_par(coint_m_san,  "log_px_san",  "log_ipc", "ym",
-  "log(SAN)", "log(IPC)", "SAN + IPC", "mensual", 12)
+                                             "log(SAN)", "log(IPC)", "SAN + IPC", "mensual", 12)
 coint_bbva_pib <- analizar_cointegracion_par(coint_q_bbva, "log_px_bbva", "log_pib", "qkey",
-  "log(BBVA)", "log(PIB)", "BBVA + PIB", "trimestral", 6)
+                                             "log(BBVA)", "log(PIB)", "BBVA + PIB", "trimestral", 6)
 coint_san_pib  <- analizar_cointegracion_par(coint_q_san,  "log_px_san",  "log_pib", "qkey",
-  "log(SAN)", "log(PIB)", "SAN + PIB", "trimestral", 6)
+                                             "log(SAN)", "log(PIB)", "SAN + PIB", "trimestral", 6)
 
 tabla_coint <- rbind(coint_bbva_ipc$resumen, coint_san_ipc$resumen,
                      coint_bbva_pib$resumen, coint_san_pib$resumen)
